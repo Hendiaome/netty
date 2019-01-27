@@ -76,11 +76,13 @@ public abstract class MultithreadEventExecutorGroup extends AbstractEventExecuto
             executor = new ThreadPerTaskExecutor(newDefaultThreadFactory());
         }
 
+        // cpu*2个sub
         children = new EventExecutor[nThreads];
 
         for (int i = 0; i < nThreads; i ++) {
             boolean success = false;
             try {
+                // 子类 io.netty.channel.nio.NioEventLoopGroup#newChild
                 children[i] = newChild(executor, args);
                 success = true;
             } catch (Exception e) {

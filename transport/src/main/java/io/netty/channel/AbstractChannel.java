@@ -477,8 +477,11 @@ public abstract class AbstractChannel extends DefaultAttributeMap implements Cha
             AbstractChannel.this.eventLoop = eventLoop;
 
             if (eventLoop.inEventLoop()) {
+
+                // 注册
                 register0(promise);
             } else {
+                // 线程池注册
                 try {
                     eventLoop.execute(new Runnable() {
                         @Override
@@ -505,7 +508,10 @@ public abstract class AbstractChannel extends DefaultAttributeMap implements Cha
                     return;
                 }
                 boolean firstRegistration = neverRegistered;
+
+                // step1: 开始注册
                 doRegister();
+
                 neverRegistered = false;
                 registered = true;
 
@@ -514,6 +520,8 @@ public abstract class AbstractChannel extends DefaultAttributeMap implements Cha
                 pipeline.invokeHandlerAddedIfNeeded();
 
                 safeSetSuccess(promise);
+
+                // step3:初始化管道中的handler
                 pipeline.fireChannelRegistered();
                 // Only fire a channelActive if the channel has never been registered. This prevents firing
                 // multiple channel actives if the channel is deregistered and re-registered.
