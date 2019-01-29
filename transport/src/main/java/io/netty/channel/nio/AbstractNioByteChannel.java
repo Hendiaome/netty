@@ -146,11 +146,12 @@ public abstract class AbstractNioByteChannel extends AbstractNioChannel {
                 do {
                     byteBuf = allocHandle.allocate(allocator);
                     allocHandle.lastBytesRead(doReadBytes(byteBuf));
-                    if (allocHandle.lastBytesRead() <= 0) {
+                    int lastBytesRead = allocHandle.lastBytesRead();
+                    if (lastBytesRead <= 0) {
                         // nothing was read. release the buffer.
                         byteBuf.release();
                         byteBuf = null;
-                        close = allocHandle.lastBytesRead() < 0;
+                        close = lastBytesRead < 0;
                         if (close) {
                             // There is nothing left to read as we received an EOF.
                             readPending = false;

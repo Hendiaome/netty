@@ -64,6 +64,8 @@ public abstract class AbstractNioMessageChannel extends AbstractNioChannel {
             assert eventLoop().inEventLoop();
             final ChannelConfig config = config();
             final ChannelPipeline pipeline = pipeline();
+
+            // 缓存分配器 io.netty.channel.AdaptiveRecvByteBufAllocator.newHandle
             final RecvByteBufAllocator.Handle allocHandle = unsafe().recvBufAllocHandle();
             allocHandle.reset(config);
 
@@ -72,6 +74,7 @@ public abstract class AbstractNioMessageChannel extends AbstractNioChannel {
             try {
                 try {
                     do {
+                        // 读消息 io.netty.channel.socket.nio.NioServerSocketChannel.doReadMessages
                         int localRead = doReadMessages(readBuf);
                         if (localRead == 0) {
                             break;
@@ -90,6 +93,7 @@ public abstract class AbstractNioMessageChannel extends AbstractNioChannel {
                 int size = readBuf.size();
                 for (int i = 0; i < size; i ++) {
                     readPending = false;
+                    // 读消息
                     pipeline.fireChannelRead(readBuf.get(i));
                 }
                 readBuf.clear();
