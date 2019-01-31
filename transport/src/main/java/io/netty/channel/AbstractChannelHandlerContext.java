@@ -146,8 +146,9 @@ abstract class AbstractChannelHandlerContext extends DefaultAttributeMap
     private void invokeChannelRegistered() {
         if (invokeHandler()) {
             try {
-                // 执行 io.netty.channel.ChannelInitializer.channelRegistered
-                ((ChannelInboundHandler) handler()).channelRegistered(this);
+                // 执行 io.netty.channel.DefaultChannelPipeline.HeadContext.channelRegistered
+                ChannelHandler h = handler();
+                ((ChannelInboundHandler) h).channelRegistered(this);
             } catch (Throwable t) {
                 notifyHandlerException(t);
             }

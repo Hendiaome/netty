@@ -212,7 +212,7 @@ public class DefaultChannelPipeline implements ChannelPipeline {
             if (!registered) {
                 newCtx.setAddPending();
 
-                // 调用channelHandler
+                // 放到等待执行回调链表
                 callHandlerCallbackLater(newCtx, true);
                 return this;
             }

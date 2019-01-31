@@ -78,13 +78,17 @@ public class ServerBootstrap extends AbstractBootstrap<ServerBootstrap, ServerCh
      * {@link Channel}'s.
      */
     public ServerBootstrap group(EventLoopGroup parentGroup, EventLoopGroup childGroup) {
+        // 设置主group
         super.group(parentGroup);
+
         if (childGroup == null) {
             throw new NullPointerException("childGroup");
         }
         if (this.childGroup != null) {
             throw new IllegalStateException("childGroup set already");
         }
+
+        // 子group
         this.childGroup = childGroup;
         return this;
     }
@@ -168,7 +172,7 @@ public class ServerBootstrap extends AbstractBootstrap<ServerBootstrap, ServerCh
             currentChildAttrs = childAttrs.entrySet().toArray(newAttrArray(0));
         }
 
-        p.addLast(new ChannelInitializer<Channel>() {
+        ChannelInitializer<Channel> channelInitializer = new ChannelInitializer<Channel>() {
             @Override
             public void initChannel(final Channel ch) throws Exception {
                 final ChannelPipeline pipeline = ch.pipeline();
@@ -185,7 +189,10 @@ public class ServerBootstrap extends AbstractBootstrap<ServerBootstrap, ServerCh
                     }
                 });
             }
-        });
+        };
+        p.addLast(channelInitializer);
+
+        System.out.println(p);
     }
 
     @Override

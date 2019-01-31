@@ -108,7 +108,8 @@ public abstract class AbstractBootstrap<B extends AbstractBootstrap<B, C>, C ext
         if (channelClass == null) {
             throw new NullPointerException("channelClass");
         }
-        return channelFactory(new ReflectiveChannelFactory<C>(channelClass));
+        ReflectiveChannelFactory<C> channelFactory = new ReflectiveChannelFactory<C>(channelClass);
+        return channelFactory(channelFactory);
     }
 
     /**
@@ -325,40 +326,40 @@ public abstract class AbstractBootstrap<B extends AbstractBootstrap<B, C>, C ext
     }
 
     final ChannelFuture initAndRegister() {
-        Channel channel = null;
+        Channel serverSocketNioChannel = null;
         try {
             // 用声明 NioServerSocketChannel
-            channel = channelFactory.newChannel();
+            serverSocketNioChannel = channelFactory.newChannel();
 
             // 调用 io.netty.bootstrap.ServerBootstrap.init
-            init(channel);
+            init(serverSocketNioChannel);
         } catch (Throwable t) {
-            if (channel != null) {
-                // channel can be null if newChannel crashed (eg SocketException("too many open files"))
-                channel.unsafe().closeForcibly();
+            if (serverSocketNioChannel != null) {
+                // serverSocketNioChannel can be null if newChannel crashed (eg SocketException("too many open files"))
+                serverSocketNioChannel.unsafe().closeForcibly();
                 // as the Channel is not registered yet we need to force the usage of the GlobalEventExecutor
-                return new DefaultChannelPromise(channel, GlobalEventExecutor.INSTANCE).setFailure(t);
+                return new DefaultChannelPromise(serverSocketNioChannel, GlobalEventExecutor.INSTANCE).setFailure(t);
             }
             // as the Channel is not registered yet we need to force the usage of the GlobalEventExecutor
             return new DefaultChannelPromise(new FailedChannel(), GlobalEventExecutor.INSTANCE).setFailure(t);
         }
 
+        // 开始 io.netty.channel.MultithreadEventLoopGroup.register(io.netty.channel.Channel)
         EventLoopGroup group = config().group();
-        // 开始注册select
-        ChannelFuture regFuture = group.register(channel);
+        ChannelFuture regFuture = group.register(serverSocketNioChannel);
 
 
         if (regFuture.cause() != null) {
-            if (channel.isRegistered()) {
-                channel.close();
+            if (serverSocketNioChannel.isRegistered()) {
+                serverSocketNioChannel.close();
             } else {
-                channel.unsafe().closeForcibly();
+                serverSocketNioChannel.unsafe().closeForcibly();
             }
         }
 
         // If we are here and the promise is not failed, it's one of the following cases:
         // 1) If we attempted registration from the event loop, the registration has been completed at this point.
-        //    i.e. It's safe to attempt bind() or connect() now because the channel has been registered.
+        //    i.e. It's safe to attempt bind() or connect() now because the serverSocketNioChannel has been registered.
         // 2) If we attempted registration from the other thread, the registration request has been successfully
         //    added to the event loop's task queue for later execution.
         //    i.e. It's safe to attempt bind() or connect() now:
