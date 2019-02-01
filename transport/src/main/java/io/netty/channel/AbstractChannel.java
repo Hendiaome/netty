@@ -483,12 +483,15 @@ public abstract class AbstractChannel extends DefaultAttributeMap implements Cha
             } else {
                 // 线程池注册
                 try {
-                    eventLoop.execute(new Runnable() {
+                    Runnable command = new Runnable() {
                         @Override
                         public void run() {
                             register0(promise);
                         }
-                    });
+                    };
+
+                    // nioEventLoop 开始执行
+                    eventLoop.execute(command);
                 } catch (Throwable t) {
                     logger.warn(
                             "Force-closing a channel whose registration task was not accepted by an event loop: {}",

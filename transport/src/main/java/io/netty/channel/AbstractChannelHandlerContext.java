@@ -339,7 +339,8 @@ abstract class AbstractChannelHandlerContext extends DefaultAttributeMap
 
     @Override
     public ChannelHandlerContext fireChannelRead(final Object msg) {
-        invokeChannelRead(findContextInbound(), msg);
+        AbstractChannelHandlerContext contextInbound = findContextInbound();
+        invokeChannelRead(contextInbound, msg);
         return this;
     }
 

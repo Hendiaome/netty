@@ -33,7 +33,7 @@ public class EchoClientHandler extends ChannelInboundHandlerAdapter {
      * Creates a client-side handler.
      */
     public EchoClientHandler() {
-        firstMessage = Unpooled.buffer(EchoClient.SIZE);
+        firstMessage = Unpooled.buffer(4);
         for (int i = 0; i < firstMessage.capacity(); i ++) {
             firstMessage.writeByte((byte) i);
         }
@@ -41,12 +41,27 @@ public class EchoClientHandler extends ChannelInboundHandlerAdapter {
 
     @Override
     public void channelActive(ChannelHandlerContext ctx) {
-        ctx.writeAndFlush(firstMessage);
+        for (int i = 0; i < 3; i++) {
+            ByteBuf byteBuf =  Unpooled.buffer(4);
+            for (int j = 0; j < byteBuf.capacity(); j ++) {
+                byteBuf.writeByte((byte) j + 97);
+            }
+
+            ctx.channel().writeAndFlush(byteBuf);
+            System.out.println("发送一次");
+
+            try {
+                Thread.sleep(3000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+
     }
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) {
-        ctx.write(msg);
+        ctx.writeAndFlush(firstMessage);
     }
 
     @Override

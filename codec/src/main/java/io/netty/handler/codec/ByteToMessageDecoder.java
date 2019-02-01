@@ -275,6 +275,8 @@ public abstract class ByteToMessageDecoder extends ChannelInboundHandlerAdapter 
                 } else {
                     cumulation = cumulator.cumulate(ctx.alloc(), cumulation, data);
                 }
+
+                // 解码
                 callDecode(ctx, cumulation, out);
             } catch (DecoderException e) {
                 throw e;
@@ -294,7 +296,10 @@ public abstract class ByteToMessageDecoder extends ChannelInboundHandlerAdapter 
 
                 int size = out.size();
                 decodeWasNull = !out.insertSinceRecycled();
+
+                // 触发下个读
                 fireChannelRead(ctx, out, size);
+
                 out.recycle();
             }
         } else {
@@ -438,6 +443,8 @@ public abstract class ByteToMessageDecoder extends ChannelInboundHandlerAdapter 
                 }
 
                 int oldInputLength = in.readableBytes();
+
+                // 开始调用解码方法
                 decodeRemovalReentryProtection(ctx, in, out);
 
                 // Check if this handler was removed before continuing the loop.
